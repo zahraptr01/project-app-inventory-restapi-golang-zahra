@@ -8,6 +8,9 @@ import (
 type CategoryRepository interface {
 	Create(category models.Category) error
 	GetAll() ([]models.Category, error)
+	GetByID(id int) (models.Category, error)
+	Update(id int, category models.Category) error
+	Delete(id int) error
 }
 
 type categoryRepo struct {
@@ -39,4 +42,21 @@ func (r *categoryRepo) GetAll() ([]models.Category, error) {
 		categories = append(categories, cat)
 	}
 	return categories, nil
+}
+
+func (r *categoryRepo) GetByID(id int) (models.Category, error) {
+	var category models.Category
+	err := r.db.QueryRow(`SELECT id, name FROM categories WHERE id=$1`, id).
+		Scan(&category.ID, &category.Name)
+	return category, err
+}
+
+func (r *categoryRepo) Update(id int, category models.Category) error {
+	_, err := r.db.Exec(`UPDATE categories SET name=$1 WHERE id=$2`, category.Name, id)
+	return err
+}
+
+func (r *categoryRepo) Delete(id int) error {
+	_, err := r.db.Exec(`DELETE FROM categories WHERE id=$1`, id)
+	return err
 }

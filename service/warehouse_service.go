@@ -8,6 +8,9 @@ import (
 type WarehouseService interface {
 	Create(w models.Warehouse) error
 	GetAll() ([]models.Warehouse, error)
+	GetByID(id int) (models.Warehouse, error)
+	Update(id int, warehouse models.Warehouse) error
+	Delete(id int) error
 }
 
 type warehouseService struct {
@@ -24,4 +27,16 @@ func (s *warehouseService) Create(w models.Warehouse) error {
 
 func (s *warehouseService) GetAll() ([]models.Warehouse, error) {
 	return s.repo.GetAll()
+}
+
+func (s *warehouseService) GetByID(id int) (models.Warehouse, error) {
+	return s.repo.GetByID(id)
+}
+
+func (s *warehouseService) Update(id int, warehouse models.Warehouse) error {
+	return s.repo.Update(id, warehouse)
+}
+
+func (s *warehouseService) Delete(id int) error {
+	return s.repo.Delete(id)
 }

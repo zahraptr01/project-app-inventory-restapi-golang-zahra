@@ -15,7 +15,7 @@ import (
 func SetupRoutes(db *sql.DB, logger *zap.Logger) *chi.Mux {
 	r := chi.NewRouter()
 
-	// --- Inisialisasi Repository ---
+	// Inisialisasi Repository
 	categoryRepo := repository.NewCategoryRepository(db)
 	itemRepo := repository.NewItemRepository(db)
 	rackRepo := repository.NewRackRepository(db)
@@ -24,7 +24,7 @@ func SetupRoutes(db *sql.DB, logger *zap.Logger) *chi.Mux {
 	saleRepo := repository.NewSaleRepository(db)
 	reportRepo := repository.NewReportRepository(db)
 
-	// --- Inisialisasi Service ---
+	// Inisialisasi Service
 	categoryService := service.NewCategoryService(categoryRepo)
 	itemService := service.NewItemService(itemRepo)
 	rackService := service.NewRackService(rackRepo)
@@ -33,7 +33,7 @@ func SetupRoutes(db *sql.DB, logger *zap.Logger) *chi.Mux {
 	saleService := service.NewSaleService(saleRepo)
 	reportService := service.NewReportService(reportRepo)
 
-	// --- Inisialisasi Handler ---
+	// Inisialisasi Handler
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	itemHandler := handler.NewItemHandler(itemService)
 	rackHandler := handler.NewRackHandler(rackService)
@@ -42,35 +42,51 @@ func SetupRoutes(db *sql.DB, logger *zap.Logger) *chi.Mux {
 	saleHandler := handler.NewSaleHandler(saleService)
 	reportHandler := handler.NewReportHandler(reportService)
 
-	// --- Routing ---
+	// Routing
 
 	// Category Routes
 	r.Route("/categories", func(r chi.Router) {
 		r.Get("/", categoryHandler.GetAll)
+		r.Get("/{id}", categoryHandler.GetByID)
 		r.Post("/", categoryHandler.Create)
+		r.Put("/{id}", categoryHandler.Update)
+		r.Delete("/{id}", categoryHandler.Delete)
 	})
 
 	// Item Routes
 	r.Route("/items", func(r chi.Router) {
 		r.Get("/", itemHandler.GetAll)
+		r.Get("/{id}", itemHandler.GetByID)
 		r.Post("/", itemHandler.Create)
+		r.Put("/{id}", itemHandler.Update)
+		r.Delete("/{id}", itemHandler.Delete)
 	})
 
 	// Rack Routes
 	r.Route("/racks", func(r chi.Router) {
 		r.Get("/", rackHandler.GetAll)
+		r.Get("/{id}", rackHandler.GetByID)
 		r.Post("/", rackHandler.Create)
+		r.Put("/{id}", rackHandler.Update)
+		r.Delete("/{id}", rackHandler.Delete)
 	})
 
 	// Warehouse Routes
 	r.Route("/warehouses", func(r chi.Router) {
 		r.Get("/", warehouseHandler.GetAll)
+		r.Get("/{id}", warehouseHandler.GetByID)
 		r.Post("/", warehouseHandler.Create)
+		r.Put("/{id}", warehouseHandler.Update)
+		r.Delete("/{id}", warehouseHandler.Delete)
 	})
 
-	// User Routes (registration only, since no login/middleware)
+	// User Routes
 	r.Route("/users", func(r chi.Router) {
-		r.Post("/register", userHandler.Register)
+		r.Get("/", userHandler.GetAll)
+		r.Get("/{id}", userHandler.GetByID)
+		r.Post("/", userHandler.Create)
+		r.Put("/{id}", userHandler.Update)
+		r.Delete("/{id}", userHandler.Delete)
 	})
 
 	// Sale Routes
@@ -85,34 +101,7 @@ func SetupRoutes(db *sql.DB, logger *zap.Logger) *chi.Mux {
 	})
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<title>Inventory API Menu</title>
-			<style>
-				body { font-family: Arial; padding: 20px; }
-				h1 { color: #333; }
-				ul { list-style: none; padding: 0; }
-				li { margin-bottom: 10px; }
-				a { text-decoration: none;}
-			</style>
-		</head>
-		<body>
-			<h1>Welcome to Inventory API</h1>
-			<ul>
-				<li><a href="/categories">Categories</a></li>
-				<li><a href="/items">Items</a></li>
-				<li><a href="/racks">Racks</a></li>
-				<li><a href="/warehouses">Warehouses</a></li>
-				<li><a href="/sales">Sales</a></li>
-				<li><a href="/report">Report</a></li>
-			</ul>
-		</body>
-		</html>
-	`))
+		http.ServeFile(w, r, "templates/index.html")
 	})
 
 	return r

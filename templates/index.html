@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory API Menu</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        h1 { color: #333; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; }
+        a { text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Inventory API</h1>
+    <ul>
+        <li><a href="/categories">Categories</a></li>
+        <li><a href="/items">Items</a></li>
+        <li><a href="/racks">Racks</a></li>
+        <li><a href="/warehouses">Warehouses</a></li>
+        <li><a href="/sales">Sales</a></li>
+    </ul>
+    <button onclick="getReport()">Report</button>
+
+    <script>
+    function getReport() {
+        fetch('http://localhost:8080/report', {
+            headers: {
+                'X-Role': 'admin'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(JSON.stringify(data));
+        })
+        .catch(err => console.error(err));
+    }
+    </script>
+</body>
+</html>

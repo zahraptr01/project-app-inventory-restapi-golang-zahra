@@ -6,6 +6,9 @@ import (
 	"assignment5/utils"
 	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type ItemHandler struct {
@@ -40,4 +43,37 @@ func (h *ItemHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(items)
+}
+
+func (h *ItemHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	item, err := h.service.GetByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(item)
+}
+
+func (h *ItemHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	var item models.Item
+	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err := h.service.Update(id, item); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *ItemHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	if err := h.service.Delete(id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

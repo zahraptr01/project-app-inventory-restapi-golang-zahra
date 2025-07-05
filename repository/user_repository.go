@@ -7,7 +7,10 @@ import (
 
 type UserRepository interface {
 	Create(user models.User) error
-	GetByEmail(email string) (models.User, error)
+	GetAll() ([]models.User, error)
+	GetByID(id int) (models.User, error)
+	Update(id int, user models.User) error
+	Delete(id int) error
 }
 
 type userRepo struct {
@@ -23,9 +26,38 @@ func (r *userRepo) Create(user models.User) error {
 	return err
 }
 
-func (r *userRepo) GetByEmail(email string) (models.User, error) {
-	row := r.db.QueryRow(`SELECT id, name, email, password, role FROM users WHERE email=$1`, email)
+func (r *userRepo) GetAll() ([]models.User, error) {
+	rows, err := r.db.Query(`SELECT id, name, email, password, role FROM users`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
+func (r *userRepo) GetByID(id int) (models.User, error) {
 	var user models.User
-	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role)
+	err := r.db.QueryRow(`SELECT id, name, email, password, role FROM users WHERE id=$1`, id).
+		Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Role)
 	return user, err
+}
+
+func (r *userRepo) Update(id int, user models.User) error {
+	_, err := r.db.Exec(`UPDATE users SET name=$1, email=$2, password=$3, role=$4 WHERE id=$5`, user.Name, user.Email, user.Password, user.Role, id)
+	return err
+}
+
+func (r *userRepo) Delete(id int) error {
+	_, err := r.db.Exec(`DELETE FROM users WHERE id=$1`, id)
+	return err
 }

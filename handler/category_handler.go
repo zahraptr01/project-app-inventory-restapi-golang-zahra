@@ -6,6 +6,9 @@ import (
 	"assignment5/utils"
 	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type CategoryHandler struct {
@@ -40,4 +43,37 @@ func (h *CategoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(data)
+}
+
+func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	category, err := h.service.GetByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(category)
+}
+
+func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	var category models.Category
+	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err := h.service.Update(id, category); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	if err := h.service.Delete(id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

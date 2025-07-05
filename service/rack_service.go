@@ -8,6 +8,9 @@ import (
 type RackService interface {
 	Create(r models.Rack) error
 	GetAll() ([]models.Rack, error)
+	GetByID(id int) (models.Rack, error)
+	Update(id int, rack models.Rack) error
+	Delete(id int) error
 }
 
 type rackService struct {
@@ -24,4 +27,16 @@ func (s *rackService) Create(r models.Rack) error {
 
 func (s *rackService) GetAll() ([]models.Rack, error) {
 	return s.repo.GetAll()
+}
+
+func (s *rackService) GetByID(id int) (models.Rack, error) {
+	return s.repo.GetByID(id)
+}
+
+func (s *rackService) Update(id int, rack models.Rack) error {
+	return s.repo.Update(id, rack)
+}
+
+func (s *rackService) Delete(id int) error {
+	return s.repo.Delete(id)
 }

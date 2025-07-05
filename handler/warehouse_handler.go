@@ -6,6 +6,9 @@ import (
 	"assignment5/utils"
 	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type WarehouseHandler struct {
@@ -40,4 +43,37 @@ func (h *WarehouseHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(warehouses)
+}
+
+func (h *WarehouseHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	warehouse, err := h.service.GetByID(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(warehouse)
+}
+
+func (h *WarehouseHandler) Update(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	var warehouse models.Warehouse
+	if err := json.NewDecoder(r.Body).Decode(&warehouse); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err := h.service.Update(id, warehouse); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *WarehouseHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	if err := h.service.Delete(id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
